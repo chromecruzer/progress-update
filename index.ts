@@ -1,7 +1,7 @@
 const express = require('express');
 
 const app = express();
-const port = process.env.PORT ||  3000;
+const port = process.env.PORT || 3000;
 
 // In-memory storage for form data
 const formData: { date: any; prachitha: any; amudha: any; }[] = [];
@@ -16,7 +16,7 @@ app.get('/', (_req: any, res: { send: (arg0: string) => void; }) => {
             <td>${entry.amudha}</td>
             <td>
                 <form action="/update/${index}" method="POST" style="display:inline;">
-                    <input type="date" name="date" required>
+                    <input type="date" name="date" value="${entry.date}" required>
                     <input type="text" name="prachitha" placeholder="Prachitha">
                     <input type="text" name="amudha" placeholder="Amudha">
                     <input type="submit" value="Update">
@@ -124,11 +124,11 @@ app.get('/', (_req: any, res: { send: (arg0: string) => void; }) => {
     res.send(html);
 });
 
-app.post('/', (req: { body: { date: any; prachitha: any; amudha: any; }; }, res: { redirect: (arg0: string) => void; }) => { 
-    const { date, prachitha, amudha } = req.body;  
+app.post('/', (req: { body: { date: any; prachitha: any; amudha: any; }; }, res: { redirect: (arg0: string) => void; }) => {
+    const { date, prachitha, amudha } = req.body;
     formData.push({
         date,
-        prachitha: prachitha || "master not yet filled",  
+        prachitha: prachitha || "master not yet filled",
         amudha: amudha || "worker not yet filled"
     });
     res.redirect('/');
@@ -137,10 +137,11 @@ app.post('/', (req: { body: { date: any; prachitha: any; amudha: any; }; }, res:
 app.post('/update/:index', (req: { body: { date: any; prachitha: any; amudha: any; }; params: { index: any; }; }, res: { redirect: (arg0: string) => void; }) => {
     const { date, prachitha, amudha } = req.body;
     const index = req.params.index;
+    const existingEntry = formData[index];
     formData[index] = {
         date,
-        prachitha: prachitha || "master not yet filled",
-        amudha: amudha || "worker not yet filled"
+        prachitha: prachitha || existingEntry.prachitha,
+        amudha: amudha || existingEntry.amudha
     };
     res.redirect('/');
 });
