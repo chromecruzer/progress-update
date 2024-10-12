@@ -313,9 +313,17 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
   try {
     const formData = await FormData.find({});
 
-    // Prepare data for D3.js
+    // Utility function to format Date objects as 'YYYY-MM-DD'
+    function formatDate(date) {
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    // Prepare data for D3.js using local date formatting
     const data = formData.map(entry => ({
-      date: entry.date.toISOString().split('T')[0],
+      date: formatDate(entry.date),
       anjutha: entry.anjutha,
       chithra: entry.chithra
     }));
@@ -405,6 +413,10 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
           border-radius: 3px;
           font-size: 0.9em;
         }
+        .current-day {
+          border: 2px solid #28a745;
+          background-color: #d4edda;
+        }
         /* Scrollbar Styling */
         .day::-webkit-scrollbar {
           width: 6px;
@@ -454,6 +466,14 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
       <script>
         const data = ${JSON.stringify(data)};
 
+        // Utility function to format Date objects as 'YYYY-MM-DD'
+        function formatDate(date) {
+          const year = date.getFullYear();
+          const month = (date.getMonth() + 1).toString().padStart(2, '0');
+          const day = date.getDate().toString().padStart(2, '0');
+          return \`\${year}-\${month}-\${day}\`;
+        }
+
         // Initialize current month and year
         let currentDate = new Date();
         let currentMonth = currentDate.getMonth();
@@ -484,8 +504,6 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
           // Clear previous days
           calendar.selectAll(".day").remove();
 
-          // Add weekdays headers (already in HTML)
-
           // Create array for days
           const days = [];
           // Add empty cells for days before the first day
@@ -512,16 +530,22 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
           // Add entries to the days
           dayCells.each(function(d) {
             if (d) {
-              const dateStr = d.toISOString().split('T')[0];
+              const dateStr = formatDate(d);
               const entries = data.filter(entry => entry.date === dateStr);
               const cell = d3.select(this);
               entries.forEach(entry => {
                 cell.append("div")
                   .attr("class", "entry")
-                  .html(\`<strong>Anjutha:</strong> \${entry.anjutha}<br><strong>Chithra:</strong> \${entry.chithra}\`);
+                  .html(`<strong>Anjutha:</strong> ${entry.anjutha}<br><strong>Chithra:</strong> ${entry.chithra}`);
               });
             }
           });
+
+          // Highlight current day
+          const todayStr = formatDate(new Date());
+          calendar.selectAll(".day")
+            .filter(d => d && formatDate(d) === todayStr)
+            .classed("current-day", true);
         }
 
         // Initial render
@@ -555,6 +579,8 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
     console.error('Error retrieving data for D3.js calendar:', err);
     res.status(500).send('Internal Server Error');
   }
+});
+
 });
 
 // Start the Server
