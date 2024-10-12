@@ -536,7 +536,7 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
               entries.forEach(entry => {
                 cell.append("div")
                   .attr("class", "entry")
-                  .html(`<strong>Anjutha:</strong> ${entry.anjutha}<br><strong>Chithra:</strong> ${entry.chithra}`);
+                  .html('<strong>Anjutha:</strong> ' + entry.anjutha + '<br><strong>Chithra:</strong> ' + entry.chithra);
               });
             }
           });
@@ -581,7 +581,6 @@ app.get('/d3calendar', checkAuthentication, async (_req, res) => {
   }
 });
 
-});
 
 // Start the Server
 app.listen(port, () => {
